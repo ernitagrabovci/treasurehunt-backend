@@ -24,7 +24,7 @@ class AuthController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Validation errors',
+                'message' => 'Gabime në validim',
                 'errors' => $validator->errors()
             ], 422);
         }
@@ -35,12 +35,11 @@ class AuthController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        // Send verification email
         $this->sendVerificationEmail($user);
 
         return response()->json([
             'success' => true,
-            'message' => 'Registration successful! Please check your email to verify your account.',
+            'message' => 'Regjistrimi u krye! Ju lutemi kontrolloni email-in për të verifikuar llogarinë para se të hyni.',
             'data' => [
                 'user_id' => $user->id,
                 'email' => $user->email
@@ -52,51 +51,11 @@ class AuthController extends Controller
     private function sendVerificationEmail($user)
     {
         $verificationUrl = url("/api/email/verify/{$user->id}/" . sha1($user->email));
-        
-        $htmlContent = '
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>Verify Your Email</title>
-            <meta charset="UTF-8">
-        </head>
-        <body style="font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px;">
-            <div style="max-width: 500px; margin: 0 auto; background: #ffffff; border-radius: 10px; padding: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-                <div style="text-align: center; margin-bottom: 30px;">
-                    <h1 style="color: #021044; margin: 0;">🗺️ Treasure Hunt Kosovo</h1>
-                </div>
-                
-                <h2 style="color: #021044;">Hello ' . $user->name . '!</h2>
-                
-                <p style="color: #333; line-height: 1.6; margin-bottom: 25px;">
-                    Thank you for registering! Please click the button below to verify your email address and activate your account.
-                </p>
-                
-                <div style="text-align: center; margin: 30px 0;">
-                    <a href="' . $verificationUrl . '" style="background-color: #D8B129; color: #021044; padding: 12px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block; font-size: 16px;">
-                        Verify Email Address
-                    </a>
-                </div>
-                
-                <p style="color: #666; font-size: 12px; margin-top: 20px;">
-                    Or copy and paste this link into your browser:<br>
-                    <span style="color: #999; word-break: break-all;">' . $verificationUrl . '</span>
-                </p>
-                
-                <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
-                
-                <p style="color: #999; font-size: 11px; text-align: center; margin: 0;">
-                    If you didn\'t create an account, you can ignore this email.
-                </p>
-            </div>
-        </body>
-        </html>
-        ';
-        
-        Mail::send([], [], function ($message) use ($user, $htmlContent) {
+        $htmlContent = view('emails.verify', compact('user', 'verificationUrl'))->render();
+
+        Mail::html($htmlContent, function ($message) use ($user) {
             $message->to($user->email)
-                    ->subject('Verify Your Email - Treasure Hunt Kosovo')
-                    ->setBody($htmlContent, 'text/html');
+                    ->subject('Verifiko Email-in - Gjueti Thesari Kosova');
         });
     }
 
@@ -106,96 +65,18 @@ class AuthController extends Controller
         $user = User::findOrFail($id);
 
         if (sha1($user->email) !== $hash) {
-            // Return HTML for browser (when user clicks email link)
-            if (request()->expectsJson()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Invalid verification link'
-                ], 400);
-            }
-            return '<h1>Invalid verification link</h1>';
+            return view('verify-success', ['loginUrl' => url('/'), 'error' => 'Invalid verification link']);
         }
 
         if ($user->email_verified_at) {
-            if (request()->expectsJson()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Email already verified'
-                ], 400);
-            }
-            return '<h1>Email already verified</h1>';
+            return view('verify-success', ['loginUrl' => url('/'), 'error' => 'Email already verified']);
         }
 
         $user->email_verified_at = now();
         $user->save();
 
-        // Return HTML for browser (user clicked email link)
-        return '
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>Email Verified!</title>
-            <style>
-                body {
-                    font-family: Arial, sans-serif;
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    height: 100vh;
-                    margin: 0;
-                    background: linear-gradient(135deg, #021044 0%, #021044 100%);
-                }
-                .container {
-                    text-align: center;
-                    background: white;
-                    padding: 40px;
-                    border-radius: 20px;
-                    max-width: 400px;
-                }
-                .success-icon {
-                    width: 80px;
-                    height: 80px;
-                    background: #4CAF50;
-                    color: white;
-                    font-size: 50px;
-                    line-height: 80px;
-                    border-radius: 50%;
-                    margin: 0 auto 20px;
-                }
-                h1 {
-                    color: #021044;
-                    margin-bottom: 10px;
-                }
-                p {
-                    color: #666;
-                    margin-bottom: 30px;
-                }
-                button {
-                    background-color: #D8B129;
-                    color: #021044;
-                    border: none;
-                    padding: 12px 30px;
-                    font-size: 16px;
-                    border-radius: 8px;
-                    cursor: pointer;
-                    font-weight: bold;
-                }
-                button:hover {
-                    background-color: #c4a020;
-                }
-            </style>
-        </head>
-        <body>
-            <div class="container">
-                <div class="success-icon">✓</div>
-                <h1>Email Verified!</h1>
-                <p>Your email has been successfully verified. You can now login to your account.</p>
-                <button onclick="window.location.href=\'treasurehunt://login\'">Go to App</button>
-                <p style="margin-top: 20px; font-size: 12px;">Or close this window and open the app</p>
-            </div>
-        </body>
-        </html>
-        ';
+        $loginUrl = url('/');
+        return view('verify-success', compact('loginUrl'));
     }
 
     // Resend verification email
@@ -217,7 +98,7 @@ class AuthController extends Controller
         if ($user->email_verified_at) {
             return response()->json([
                 'success' => false,
-                'message' => 'Email already verified'
+                'message' => 'Email-i tashmë është i verifikuar'
             ], 400);
         }
 
@@ -225,7 +106,7 @@ class AuthController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Verification email sent! Please check your inbox.'
+            'message' => 'Email-i i verifikimit u dërgua! Kontrolloni inbox-in tuaj.'
         ]);
     }
 
@@ -249,14 +130,14 @@ class AuthController extends Controller
         if (!$user) {
             return response()->json([
                 'success' => false,
-                'message' => 'Invalid credentials'
+                'message' => 'Kredenciale të pavlefshme'
             ], 401);
         }
 
         if (!$user->email_verified_at) {
             return response()->json([
                 'success' => false,
-                'message' => 'Please verify your email first. Check your inbox for verification link.',
+                'message' => 'Ju lutemi verifikoni email-in fillimisht. Kontrolloni inbox-in për lidhjen e verifikimit.',
                 'requires_verification' => true,
                 'email' => $user->email
             ], 401);
@@ -265,7 +146,7 @@ class AuthController extends Controller
         if (!Auth::attempt($request->only('email', 'password'))) {
             return response()->json([
                 'success' => false,
-                'message' => 'Invalid credentials'
+                'message' => 'Kredenciale të pavlefshme'
             ], 401);
         }
 
@@ -273,7 +154,7 @@ class AuthController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Welcome back to Treasure Hunt Kosovo!',
+            'message' => 'Mirësevini përsëri në Gjuetinë e Thesarit Kosova!',
             'data' => [
                 'user' => $user,
                 'access_token' => $token,
@@ -294,11 +175,13 @@ class AuthController extends Controller
     // Logout
     public function logout(Request $request)
     {
-        $request->user()->currentAccessToken()->delete();
+        if ($request->user()->currentAccessToken()) {
+            $request->user()->currentAccessToken()->delete();
+        }
 
         return response()->json([
             'success' => true,
-            'message' => 'Logged out successfully'
+            'message' => 'Dolët nga llogaria me sukses'
         ]);
     }
 }

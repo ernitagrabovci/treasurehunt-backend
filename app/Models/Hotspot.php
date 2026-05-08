@@ -18,4 +18,9 @@ class Hotspot extends Model
     {
         return $this->belongsTo(Scene::class);
     }
+
+    public function targetScene()
+    {
+        return $this->belongsTo(Scene::class, 'target_scene_id');
+    }
 }
