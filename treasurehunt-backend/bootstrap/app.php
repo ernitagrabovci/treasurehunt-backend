@@ -13,9 +13,13 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        $middleware->api(prepend: [
-            EnsureFrontendRequestsAreStateful::class,
-        ]);
+        // Sanctum SPA stateful middleware omitted intentionally.
+        // This app uses token-based auth (localStorage), not SPA session cookies.
+        // Including EnsureFrontendRequestsAreStateful causes CSRF errors on
+        // same-origin JSON API requests from Blade views.
+        // $middleware->api(prepend: [
+        //     EnsureFrontendRequestsAreStateful::class,
+        // ]);
 
         $middleware->alias([
             'admin' => \App\Http\Middleware\AdminMiddleware::class,

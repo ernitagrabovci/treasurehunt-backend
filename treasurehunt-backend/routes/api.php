@@ -10,6 +10,7 @@ Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/resend-verification', [AuthController::class, 'resendVerification']);
 Route::get('/email/verify/{id}/{hash}', [AuthController::class, 'verifyEmail']);
+Route::post('/email/verify-json', [AuthController::class, 'verifyEmailJson']);
 
 // Authenticated user routes
 Route::middleware('auth:sanctum')->group(function () {

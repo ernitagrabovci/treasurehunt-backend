@@ -34,7 +34,19 @@
       "Bash(python3 -c ' *)",
       "Bash(c:/Users/PC/.config/herd/bin/php84/php.exe *)",
       "Bash(python3 -m json.tool)",
-      "Bash(php *)"
+      "Bash(php *)",
+      "PowerShell(php -v 2>&1)",
+      "PowerShell(php C:\\\\Users\\\\PC\\\\Desktop\\\\treasurehunt-backend\\\\list_users.php 2>&1)",
+      "PowerShell(Get-NetTCPConnection *)",
+      "PowerShell(php C:\\\\Users\\\\PC\\\\Desktop\\\\treasurehunt-backend\\\\treasurehunt-backend\\\\check_users.php 2>&1)",
+      "PowerShell(php -S 127.0.0.1:8000 -t \"C:\\\\Users\\\\PC\\\\Desktop\\\\treasurehunt-backend\\\\treasurehunt-backend\\\\public\" 2>&1)",
+      "PowerShell(php artisan serve --port=8000)",
+      "PowerShell(php C:\\\\Users\\\\PC\\\\Desktop\\\\treasurehunt-backend\\\\treasurehunt-backend\\\\list_users.php 2>&1)",
+      "Bash(taskkill *)",
+      "PowerShell(Stop-Process *)",
+      "PowerShell(Set-Location \"C:\\\\Users\\\\PC\\\\Desktop\\\\treasurehunt-backend\\\\treasurehunt-backend\"; php artisan tinker --execute=\"try { Mail::raw\\('Test email from Treasure Hunt', function\\(\\\\$msg\\) { \\\\$msg->to\\('narticerkini@gmail.com'\\)->subject\\('SMTP Test'\\); }\\); echo 'OK'; } catch \\(\\\\Exception \\\\$e\\) { echo 'ERROR: ' . \\\\$e->getMessage\\(\\); }\" 2>&1)",
+      "PowerShell(Set-Location \"C:\\\\Users\\\\PC\\\\Desktop\\\\treasurehunt-backend\\\\treasurehunt-backend\"; php -r \"try { \\\\$transport = new \\\\Symfony\\\\Component\\\\Mailer\\\\Transport\\\\Smtp\\\\EsmtpTransport\\('smtp-relay.brevo.com', 587, 'tls'\\); \\\\$transport->setUsername\\('a897b7001@smtp-brevo.com'\\); \\\\$transport->setPassword\\('xsmtpsib-72514dad4d5806527abd2ddcb70ee88d13fa3e8a342d1212aebe8d0bf7829ccf-3TiLcVZwqwvqVb75'\\); \\\\$transport->start\\(\\); echo 'SMTP connection OK'; } catch \\(Exception \\\\$e\\) { echo 'ERROR: ' . \\\\$e->getMessage\\(\\); }\" 2>&1)",
+      "PowerShell(Set-Location \"C:\\\\Users\\\\PC\\\\Desktop\\\\treasurehunt-backend\\\\treasurehunt-backend\"; php artisan config:clear 2>&1; php artisan tinker --execute=\"try { Mail::raw\\('Test', function\\(\\\\$m\\) { \\\\$m->to\\('ernitagrabovc@gmail.com'\\)->subject\\('SMTP Test'\\); }\\); echo 'OK'; } catch \\(\\\\Throwable \\\\$e\\) { echo 'ERROR: ' . \\\\$e->getMessage\\(\\); }\" 2>&1)"
     ]
   }
 }

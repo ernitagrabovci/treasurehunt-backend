@@ -45,7 +45,8 @@
                 headers['Content-Type'] = 'application/json';
             }
             const res = await fetch(API + path, { ...options, headers });
-            if (res.status === 401) {
+            // Don't intercept 401 on auth endpoints — they return proper error messages
+            if (res.status === 401 && !['/login', '/register', '/logout'].includes(path)) {
                 localStorage.removeItem('token');
                 localStorage.removeItem('user');
                 if (!window.location.pathname.includes('login')) {

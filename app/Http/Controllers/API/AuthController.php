@@ -42,9 +42,50 @@ class AuthController extends Controller
             'message' => 'Regjistrimi u krye! Ju lutemi kontrolloni email-in për të verifikuar llogarinë para se të hyni.',
             'data' => [
                 'user_id' => $user->id,
-                'email' => $user->email
+                'email' => $user->email,
+                'verification_hash' => sha1($user->email)
             ]
         ], 201);
+    }
+
+    // Verify email via JSON (called from mobile app)
+    public function verifyEmailJson(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'user_id' => 'required|integer|exists:users,id',
+            'hash' => 'required|string',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid verification data'
+            ], 422);
+        }
+
+        $user = User::findOrFail($request->user_id);
+
+        if (sha1($user->email) !== $request->hash) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid verification link'
+            ], 400);
+        }
+
+        if ($user->email_verified_at) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Email already verified'
+            ]);
+        }
+
+        $user->email_verified_at = now();
+        $user->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Email verified successfully'
+        ]);
     }
 
     // Send verification email with clickable button
