@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>{{ $scene->title['sq'] ?? '360 View' }}</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css">
-    <script src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
+    <link rel="stylesheet" href="/pannellum/pannellum.css">
+    <script src="/pannellum/pannellum.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html, body { width: 100%; height: 100%; overflow: hidden; background: #000; }
@@ -227,6 +227,7 @@
     <script>
         const scene = @json($scene);
         const scenesByLevel = @json($scenesByLevel);
+        const sceneImageUrl = @json($scene->image_path);
 
         function sendToApp(data) {
             if (window.ReactNativeWebView && window.ReactNativeWebView.postMessage) {
@@ -382,7 +383,7 @@
 
         const viewer = pannellum.viewer('panorama', {
             type: 'equirectangular',
-            panorama: '/api/scene-image/' + scene.id,
+            panorama: sceneImageUrl,
             autoLoad: true,
             autoRotate: -2,
             compass: true,
@@ -392,6 +393,11 @@
         viewer.on('load', function() {
             try { viewer.stopAutoRotate?.(); } catch(e) {}
             sendToApp({ type: 'loaded', scene_id: scene.id });
+        });
+
+        viewer.on('error', function(err) {
+            console.error('Pannellum error:', err);
+            sendToApp({ type: 'loaded', scene_id: scene.id, error: true });
         });
     </script>
 </body>

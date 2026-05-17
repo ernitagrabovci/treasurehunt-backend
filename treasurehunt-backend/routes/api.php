@@ -20,6 +20,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
 // Game routes (authenticated)
 Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/levels', [GameController::class, 'levels']);
     Route::get('/game/scenes', [GameController::class, 'scenes']);
     Route::get('/game/initial-scene', [GameController::class, 'initialScene']);
     Route::get('/game/scene/{id}', [GameController::class, 'scene']);

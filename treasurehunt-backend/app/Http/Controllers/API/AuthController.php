@@ -76,8 +76,8 @@ class AuthController extends Controller
         $user->email_verified_at = now();
         $user->save();
 
-        $loginUrl = url('/');
-        return view('verify-success', compact('loginUrl'));
+        // Redirect directly to login page after verification
+        return redirect('http://127.0.0.1:8000/login');
     }
 
     // Verify email via JSON (for mobile app)

@@ -261,5 +261,21 @@ class DatabaseSeeder extends Seeder
                 }
             }
         }
+
+        // ── Seed the levels table ──
+        $firstSceneOfLevel = [];
+        foreach ($sceneRef as $level => $scenes) {
+            $firstSceneOfLevel[$level] = $scenes[0] ?? null;
+        }
+
+        foreach ($levelData as $level => $data) {
+            $first = $firstSceneOfLevel[$level];
+            \App\Models\Level::create([
+                'title' => ['en' => $data['name'], 'sq' => "Niveli $level"],
+                'image_path' => $first ? $first->image_path : null,
+                'scene_id' => $first ? $first->id : null,
+                'order' => $level,
+            ]);
+        }
     }
 }

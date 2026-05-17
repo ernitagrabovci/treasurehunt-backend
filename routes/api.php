@@ -28,8 +28,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/treasures', [GameController::class, 'treasures']);
     Route::get('/treasures/check/{hotspotId}', [GameController::class, 'checkTreasure']);
     Route::post('/treasures/found', [GameController::class, 'markTreasureFound']);
+    Route::get('/levels', [GameController::class, 'levels']);
     Route::get('/leaderboard', [GameController::class, 'leaderboard']);
     Route::get('/user/level', [GameController::class, 'myLevel']);
+    Route::get('/game/level-progress', [GameController::class, 'levelProgress']);
 });
 
 // Scene images (public - served through backend for management)
@@ -39,7 +41,8 @@ Route::get('/scene-image-by-path/{filename}', function ($filename) {
     if (!file_exists($path)) {
         abort(404);
     }
-    return response()->file($path);
+    $mime = finfo_file(finfo_open(FILEINFO_MIME_TYPE), $path);
+    return response()->file($path, ['Content-Type' => $mime]);
 });
 
 // Admin routes (authenticated + admin role)

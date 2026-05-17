@@ -4,8 +4,9 @@ use App\Http\Controllers\Admin\AdminWebController;
 use App\Http\Controllers\WebController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', [WebController::class, 'login']);
+Route::get('/', [WebController::class, 'login'])->name('login');
 Route::get('/play', [WebController::class, 'play']);
+Route::get('/embed/scene/{id}', [WebController::class, 'embedScene']);
 Route::get('/leaderboard', [WebController::class, 'leaderboard']);
 Route::get('/profile', [WebController::class, 'profile']);
 

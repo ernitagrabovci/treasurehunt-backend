@@ -177,9 +177,86 @@ class GameController extends Controller
         $user = request()->user();
         $levelData = $user->level;
 
+        $levelsWithScenes = Scene::select('level')
+            ->distinct()
+            ->pluck('level')
+            ->toArray();
+
         return response()->json([
             'success' => true,
-            'data' => $levelData + ['current_level' => $user->current_level],
+            'data' => $levelData + [
+                'current_level' => $user->current_level,
+                'levels_with_scenes' => $levelsWithScenes,
+            ],
+        ]);
+    }
+
+    public function levels()
+    {
+        try {
+            $dbLevels = \App\Models\Level::orderBy('order')->get();
+            if ($dbLevels->isNotEmpty()) {
+                $data = $dbLevels->map(function ($level) {
+                    return [
+                        'id' => $level->id,
+                        'title' => $level->title,
+                        'image_url' => $level->image_path,
+                        'scene_id' => $level->scene_id,
+                        'order' => $level->order,
+                    ];
+                });
+                return response()->json(['success' => true, 'data' => $data]);
+            }
+        } catch (\Exception $e) {
+            // Table doesn't exist yet — fall through
+        }
+
+        $distinctLevels = Scene::select('level')
+            ->distinct()
+            ->orderBy('level')
+            ->pluck('level');
+
+        $data = $distinctLevels->map(function ($level) {
+            $first = Scene::where('level', $level)->orderBy('id')->first();
+            return [
+                'id' => $level,
+                'title' => ['en' => "Level $level", 'sq' => "Niveli $level"],
+                'image_url' => $first?->image_path,
+                'scene_id' => $first?->id,
+                'order' => $level,
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'data' => $data,
+        ]);
+    }
+
+    public function levelProgress()
+    {
+        $user = request()->user();
+        $currentLevel = $user->current_level;
+
+        $sceneIds = Scene::where('level', $currentLevel)->pluck('id');
+        $totalTreasures = Hotspot::whereIn('scene_id', $sceneIds)->where('type', 'treasure')->count();
+        $foundTreasures = UserTreasure::where('user_id', $user->id)
+            ->whereIn('hotspot_id', Hotspot::whereIn('scene_id', $sceneIds)->where('type', 'treasure')->pluck('id'))
+            ->count();
+
+        $completed = $totalTreasures > 0 && $foundTreasures >= $totalTreasures;
+        $nextLevelUnlocked = $currentLevel < 5 && $completed;
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'current_level' => $currentLevel,
+                'total_treasures' => $totalTreasures,
+                'found_treasures' => $foundTreasures,
+                'completed' => $completed,
+                'next_level_unlocked' => $nextLevelUnlocked,
+                'max_level' => 5,
+            ],
         ]);
     }
 

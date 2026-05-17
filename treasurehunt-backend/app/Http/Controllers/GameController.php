@@ -231,6 +231,53 @@ class GameController extends Controller
         ]);
     }
 
+    public function levels()
+    {
+        // Try the dedicated levels table first
+        try {
+            $dbLevels = \App\Models\Level::orderBy('order')->get();
+            if ($dbLevels->isNotEmpty()) {
+                $data = $dbLevels->map(function ($level) {
+                    return [
+                        'id' => $level->id,
+                        'title' => $level->title,
+                        'image_url' => $level->image_path,
+                        'scene_id' => $level->scene_id,
+                        'order' => $level->order,
+                    ];
+                });
+                return response()->json(['success' => true, 'data' => $data]);
+            }
+        } catch (\Exception $e) {
+            // Table doesn't exist yet — fall through to scenes fallback
+        }
+
+        // Fallback: derive levels from the scenes table
+        $distinctLevels = \App\Models\Scene::select('level')
+            ->distinct()
+            ->orderBy('level')
+            ->pluck('level');
+
+        $data = $distinctLevels->map(function ($level) {
+            $first = \App\Models\Scene::where('level', $level)
+                ->orderBy('id')
+                ->first();
+
+            return [
+                'id' => $level,
+                'title' => ['en' => "Level $level", 'sq' => "Niveli $level"],
+                'image_url' => $first?->image_path,
+                'scene_id' => $first?->id,
+                'order' => $level,
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'data' => $data,
+        ]);
+    }
+
     public function advanceLevel()
     {
         $user = request()->user();

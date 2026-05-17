@@ -38,6 +38,7 @@ class WebController extends Controller
             ->orderBy('id')
             ->get()
             ->groupBy('level');
+
         return view('embed.scene', compact('scene', 'scenesByLevel'));
     }
 }
